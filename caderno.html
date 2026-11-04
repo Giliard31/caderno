@@ -365,4 +365,120 @@ function carregarDados() {
     const salvos = localStorage.getItem('caderno_cultos');
     if (salvos) {
         cultos = JSON.parse(salvos);
-   
+        
+       renderizarLista();
+}
+
+function salvarDados() {
+    localStorage.setItem('caderno_cultos', JSON.stringify(cultos));
+    renderizarLista();
+}
+
+function formatarData(dataStr) {
+    if (!dataStr) return 'Sem data';
+    const data = new Date(dataStr + 'T00:00:00');
+    return data.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+    });
+}
+
+function gerarId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+function renderizarLista() {
+    const container = document.getElementById('listaCultos');
+    if (cultos.length === 0) {
+        container.innerHTML = '<div class="empty">📭 Nenhuma anotação salva ainda.<br>Comece registrando seu primeiro culto acima!</div>';
+        return;
+    }
+    
+    cultos.sort((a, b) => new Date(b.data) - new Date(a.data));
+    
+    container.innerHTML = cultos.map(culto => `
+        <div class="culto-card">
+            <div class="culto-data">📅 ${formatarData(culto.data)}</div>
+            <div class="culto-titulo">${culto.tema || 'Sem título'}</div>
+            <div class="culto-meta">
+                ${culto.tipoCulto} — ${culto.pregador || 'Pregador não informado'}
+            </div>
+            <div class="culto-texto">${culto.anotacoes || '<em>Sem anotações</em>'}</div>
+            <div class="culto-acoes">
+                <button class="btn-pequeno" onclick="editarCulto('${culto.id}')">✏️ Editar</button>
+                <button class="btn-pequeno btn-excluir" onclick="excluirCulto('${culto.id}')">🗑️ Excluir</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+window.editarCulto = function(id) {
+    const culto = cultos.find(c => c.id === id);
+    if (!culto) return;
+    
+    editandoId = id;
+    document.getElementById('dataCulto').value = culto.data || '';
+    document.getElementById('tipoCulto').value = culto.tipoCulto || 'Culto Dominical';
+    document.getElementById('pregador').value = culto.pregador || '';
+    document.getElementById('tema').value = culto.tema || '';
+    document.getElementById('anotacoes').value = culto.anotacoes || '';
+    
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    document.querySelector('button[type="submit"]').textContent = '🔄 Atualizar';
+};
+
+window.excluirCulto = function(id) {
+    if (confirm('Tem certeza que deseja excluir esta anotação?')) {
+        cultos = cultos.filter(c => c.id !== id);
+        salvarDados();
+    }
+};
+
+function limparFormulario() {
+    editandoId = null;
+    document.getElementById('dataCulto').value = new Date().toISOString().split('T')[0];
+    document.getElementById('tipoCulto').value = 'Culto Dominical';
+    document.getElementById('pregador').value = '';
+    document.getElementById('tema').value = '';
+    document.getElementById('anotacoes').value = '';
+    document.querySelector('button[type="submit"]').textContent = '💾 Salvar Anotação';
+}
+
+document.getElementById('cultoForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const dadosCulto = {
+        id: editandoId || gerarId(),
+        data: document.getElementById('dataCulto').value,
+        tipoCulto: document.getElementById('tipoCulto').value,
+        pregador: document.getElementById('pregador').value.trim(),
+        tema: document.getElementById('tema').value.trim(),
+        anotacoes: document.getElementById('anotacoes').value.trim()
+    };
+    
+    if (editandoId) {
+        const indice = cultos.findIndex(c => c.id === editandoId);
+        if (indice !== -1) {
+            cultos[indice] = dadosCulto;
+        }
+    } else {
+        cultos.unshift(dadosCulto);
+    }
+    
+    salvarDados();
+    limparFormulario();
+    alert('✅ Anotação salva com sucesso!');
+});
+
+document.getElementById('limparBtn').addEventListener('click', limparFormulario);
+
+document.addEventListener('DOMContentLoaded', function() {
+    carregarDados();
+    document.getElementById('dataCulto').value = new Date().toISOString().split('T')[0];
+});
+</script>
+
+</body>
+</html>
+
