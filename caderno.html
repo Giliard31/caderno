@@ -113,16 +113,15 @@
         ℹ️ <strong>Como usar:</strong> Clique em 🎙️ para começar. Fale naturalmente — ele continua ouvindo mesmo nas pausas. Clique em ⏹️ quando terminar.
     </div>
     <div class="aviso-importante">
-        ⚠️ <strong>Sobre a tela fechada:</strong> No celular, alguns navegadores podem interromper a escuta quando a tela bloqueia. Para melhor resultado, mantenha a página aberta e com a tela acesa ou use o recurso de "manter acordado" do seu aparelho. A transcrição continua acumulando tudo!
+        ⚠️ <strong>Sobre a tela fechada:</strong> No celular, quando você bloqueia a tela, o navegador PODE parar a escuta (isso é uma proteção do sistema). Para melhores resultados, mantenha a página aberta e com a tela acesa durante a gravação. O texto NÃO se perde quando você pausa — tudo fica acumulado na tela!
     </div>
 
-    <!-- 🎤 ÁREA DE GRAVAÇÃO E TRANSCRIÇÃO -->
     <div class="record-section">
         <h2>🎤 Transcrição da Mensagem</h2>
         <button class="mic-btn" id="micBtn" title="Clique para começar/parar">🎙️</button>
         <p class="status" id="status">Clique no botão acima para começar<br>Ele vai pedir permissão do microfone — clique em Permitir</p>
         <div class="transcricao-box" id="transcricaoBox">
-            <em>O que você fala vai aparecer aqui...<br><br>✅ Enquanto você fala, as palavras aparecem abaixo em cinza<br>✅ Quando você faz uma pausa, o texto é salvo e aparece em preto<br>✅ Nada é perdido, tudo vai ficando acumulado aqui</em>
+            <em>O que você fala vai aparecer aqui...<br><br>✅ Enquanto você fala, as palavras aparecem abaixo em cinza<br>✅ Quando você faz uma pausa, o texto é salvo e fica em preto<br>✅ Nada é perdido, tudo vai ficando acumulado aqui</em>
         </div>
         <div style="margin-top: 10px;">
             <button id="limparTranscricaoBtn" class="btn-secondary">🗑️ Limpar Transcrição</button>
@@ -130,7 +129,6 @@
         </div>
     </div>
 
-    <!-- 📝 FORMULÁRIO PARA SALVAR -->
     <form id="cultoForm">
         <h2>📝 Dados do Culto</h2>
         
@@ -160,7 +158,6 @@
         <button type="button" class="btn-secondary" id="limparBtn">🗑️ Limpar Tudo</button>
     </form>
 
-    <!-- 📚 LISTA DE ANOTAÇÕES SALVAS -->
     <div class="lista-section">
         <h2>📚 Minhas Anotações</h2>
         <div id="listaCultos"></div>
@@ -168,13 +165,10 @@
 </main>
 
 <script>
-// =====================================================
-// 🎙️ RECONHECIMENTO DE VOZ — ACUMULA TEXTO SEM PERDER
-// =====================================================
 let reconhecimento = null;
 let estaGravando = false;
-let textoAcumulado = '';  // O que está finalizado — nunca se perde
-let textoParcial = '';    // O que está sendo dito agora
+let textoAcumulado = '';
+let textoParcial = '';
 
 const micBtn = document.getElementById('micBtn');
 const status = document.getElementById('status');
@@ -182,60 +176,44 @@ const transcricaoBox = document.getElementById('transcricaoBox');
 const usarTextoBtn = document.getElementById('usarTextoBtn');
 const limparTranscricaoBtn = document.getElementById('limparTranscricaoBtn');
 
-// Verificar suporte do navegador
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     reconhecimento = new SpeechRecognition();
     reconhecimento.lang = 'pt-BR';
-    reconhecimento.continuous = true;      // Continua mesmo após pausas
-    reconhecimento.interimResults = true;  // Mostra o texto enquanto fala
-    reconhecimento.maxAlternatives = 1;
+    reconhecimento.continuous = true;
+    reconhecimento.interimResults = true;
 
-    // Quando receber resultados
     reconhecimento.onresult = function(event) {
         let novoTextoParcial = '';
-        
-        // Percorrer todos os resultados
         for (let i = event.resultIndex; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
-                // Texto finalizado — adiciona ao acumulado
                 textoAcumulado += (textoAcumulado ? ' ' : '') + event.results[i][0].transcript;
                 textoParcial = '';
             } else {
-                // Texto ainda sendo dito — mostra temporariamente
                 novoTextoParcial += event.results[i][0].transcript;
                 textoParcial = novoTextoParcial;
             }
         }
-        
         atualizarVisualizacao();
     };
 
     reconhecimento.onerror = function(event) {
         console.log('Erro:', event.error);
-        
         if (event.error === 'not-allowed') {
             status.innerHTML = '❌ Permissão negada.<br>Clique no 🔒 da barra de endereço e permita o microfone.';
         } else if (event.error === 'no-speech') {
-            // Sem fala — não para, continua tentando
             status.textContent = '⏸️ Aguardando... pode continuar falando.';
         } else if (event.error === 'aborted' && estaGravando) {
-            // Foi interrompido mas queremos continuar — reinicia
             reiniciarReconhecimento();
         } else {
             status.textContent = '⚠️ ' + event.error;
         }
     };
 
-    // Quando o reconhecimento para sozinho — reinicia se ainda estiver gravando
     reconhecimento.onend = function() {
         if (estaGravando) {
             reiniciarReconhecimento();
         }
-    };
-
-    reconhecimento.onnomatch = function() {
-        // Não entendeu — não faz nada, continua
     };
 } else {
     status.innerHTML = '❌ Seu navegador não suporta reconhecimento de voz.<br>Use o <strong>Google Chrome</strong> ou <strong>Microsoft Edge</strong>.';
@@ -243,7 +221,6 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     micBtn.style.opacity = '0.5';
 }
 
-// Reinicia o reconhecimento sem perder o que já foi capturado
 function reiniciarReconhecimento() {
     if (!estaGravando || !reconhecimento) return;
     try {
@@ -251,33 +228,23 @@ function reiniciarReconhecimento() {
         status.textContent = '🔴 Ouvindo... continue falando!';
     } catch (e) {
         console.log('Erro ao reiniciar:', e);
-        setTimeout(reiniciarReconhecimento, 500); // Tenta de novo depois de meio segundo
+        setTimeout(reiniciarReconhecimento, 500);
     }
 }
 
-// Atualiza o que aparece na tela
 function atualizarVisualizacao() {
     let html = '';
-    
-    // Texto já salvo/acumulado — em preto
     if (textoAcumulado) {
         html += `<div class="texto-final">${textoAcumulado}</div>`;
     }
-    
-    // Texto sendo dito agora — em cinza/itálico
     if (textoParcial) {
         html += `<div class="texto-parcial">${textoParcial}</div>`;
     }
-    
     if (!html) {
         html = '<em>O que você fala vai aparecer aqui...</em>';
     }
-    
     transcricaoBox.innerHTML = html;
-    // Rola automaticamente pra baixo pra mostrar o texto mais recente
     transcricaoBox.scrollTop = transcricaoBox.scrollHeight;
-    
-    // Mostra o botão de usar se tiver algum texto
     if (textoAcumulado || textoParcial) {
         usarTextoBtn.classList.remove('hidden');
     }
@@ -285,14 +252,12 @@ function atualizarVisualizacao() {
 
 function começarGravacao() {
     if (!reconhecimento) return;
-    
     estaGravando = true;
     textoParcial = '';
     micBtn.classList.add('gravando');
     micBtn.innerHTML = '⏹️';
     status.textContent = '🔴 Ouvindo... fale livremente — continuo ouvindo nas pausas!';
     usarTextoBtn.classList.add('hidden');
-    
     try {
         reconhecimento.start();
     } catch (erro) {
@@ -302,30 +267,23 @@ function começarGravacao() {
 
 function pararGravacao() {
     if (!reconhecimento) return;
-    
     estaGravando = false;
     micBtn.classList.remove('gravando');
     micBtn.innerHTML = '🎙️';
-    
-    // Se tiver texto parcial, adiciona ao final
     if (textoParcial) {
         textoAcumulado += (textoAcumulado ? ' ' : '') + textoParcial;
         textoParcial = '';
     }
-    
     if (textoAcumulado) {
         status.textContent = '✅ Transcrição concluída! Clique em "Usar este texto" para colocar na anotação.';
         usarTextoBtn.classList.remove('hidden');
     } else {
         status.textContent = '⏹️ Parado. Clique para começar.';
     }
-    
     atualizarVisualizacao();
-    
     try { reconhecimento.stop(); } catch(e) {}
 }
 
-// Ação do botão do microfone
 micBtn.addEventListener('click', function() {
     if (estaGravando) {
         pararGravacao();
@@ -334,7 +292,6 @@ micBtn.addEventListener('click', function() {
     }
 });
 
-// Limpar só a transcrição
 limparTranscricaoBtn.addEventListener('click', function() {
     if (estaGravando) {
         pararGravacao();
@@ -349,15 +306,11 @@ limparTranscricaoBtn.addEventListener('click', function() {
     status.textContent = 'Clique no botão acima para começar';
 });
 
-// Usar texto transcrito no formulário
 usarTextoBtn.addEventListener('click', function() {
     document.getElementById('anotacoes').value = textoAcumulado;
     window.scrollTo({top: document.getElementById('anotacoes').offsetTop - 20, behavior: 'smooth'});
 });
 
-// =====================================================
-// 📝 SALVAR E GERENCIAR ANOTAÇÕES
-// =====================================================
 let cultos = [];
 let editandoId = null;
 
@@ -365,8 +318,8 @@ function carregarDados() {
     const salvos = localStorage.getItem('caderno_cultos');
     if (salvos) {
         cultos = JSON.parse(salvos);
-        
-       renderizarLista();
+    }
+    renderizarLista();
 }
 
 function salvarDados() {
@@ -394,9 +347,7 @@ function renderizarLista() {
         container.innerHTML = '<div class="empty">📭 Nenhuma anotação salva ainda.<br>Comece registrando seu primeiro culto acima!</div>';
         return;
     }
-    
     cultos.sort((a, b) => new Date(b.data) - new Date(a.data));
-    
     container.innerHTML = cultos.map(culto => `
         <div class="culto-card">
             <div class="culto-data">📅 ${formatarData(culto.data)}</div>
@@ -416,14 +367,12 @@ function renderizarLista() {
 window.editarCulto = function(id) {
     const culto = cultos.find(c => c.id === id);
     if (!culto) return;
-    
     editandoId = id;
     document.getElementById('dataCulto').value = culto.data || '';
     document.getElementById('tipoCulto').value = culto.tipoCulto || 'Culto Dominical';
     document.getElementById('pregador').value = culto.pregador || '';
     document.getElementById('tema').value = culto.tema || '';
     document.getElementById('anotacoes').value = culto.anotacoes || '';
-    
     window.scrollTo({top: 0, behavior: 'smooth'});
     document.querySelector('button[type="submit"]').textContent = '🔄 Atualizar';
 };
@@ -481,4 +430,3 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </body>
 </html>
-
