@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📖 Caderno de Cultos — Com Voz</title>
+    <title>📖 Caderno de Cultos</title>
     <style>
         :root {
             --accent: #8b0000;
@@ -20,7 +20,17 @@
             color: white; padding: 20px; text-align: center;
         }
         header h1 {font-size: 1.4rem; margin-bottom: 5px;}
-        main {max-width: 700px; margin: 0 auto; padding: 15px;}
+        
+        .abas {display: flex; max-width: 700px; margin: 0 auto; padding: 15px 15px 0; gap: 5px;}
+        .aba {
+            padding: 10px 20px; background: #ddd; border: none; border-radius: 8px 8px 0 0;
+            cursor: pointer; font-size: 0.95rem; transition: all 0.2s;
+        }
+        .aba.ativa {background: var(--card); font-weight: bold; border-bottom: 3px solid var(--accent);}
+        
+        main {max-width: 700px; margin: 0 auto; padding: 15px; background: var(--card); border-radius: 0 0 10px 10px;}
+        .conteudo-aba {display: none;}
+        .conteudo-aba.ativa {display: block;}
 
         .aviso {
             background: #e8f4f8; border-left: 4px solid #2980b9;
@@ -31,10 +41,6 @@
             padding: 12px; margin-bottom: 20px; border-radius: 4px; font-size: 0.9rem;
         }
         
-        .record-section {
-            background: var(--card); padding: 25px; border-radius: 12px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1); margin-bottom: 25px; text-align: center;
-        }
         h2 {font-size: 1.1rem; margin-bottom: 15px; color: var(--accent);}
         
         .mic-btn {
@@ -75,10 +81,7 @@
         .btn-excluir {background: #c0392b;}
         .hidden {display: none !important;}
         
-        form {
-            background: var(--card); padding: 25px; border-radius: 12px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1); margin-bottom: 25px;
-        }
+        form {margin-bottom: 25px;}
         label {display: block; margin-bottom: 5px; font-weight: 500; font-size: 0.95rem;}
         input, select, textarea {
             width: 100%; padding: 10px; margin-bottom: 15px;
@@ -88,92 +91,148 @@
         textarea {min-height: 120px; resize: vertical;}
         
         .lista-section h2 {margin-top: 30px;}
-        .culto-card {
-            background: var(--card); padding: 18px; border-radius: 10px;
+        .culto-card, .estudo-card {
+            background: var(--bg); padding: 18px; border-radius: 10px;
             margin-bottom: 15px; border-left: 4px solid var(--accent);
             box-shadow: 0 2px 6px rgba(0,0,0,0.08);
         }
-        .culto-data {font-size: 0.85rem; color: #888; margin-bottom: 5px;}
-        .culto-titulo {font-weight: bold; font-size: 1.05rem; margin-bottom: 8px; color: var(--accent);}
+        .culto-data, .estudo-data {font-size: 0.85rem; color: #888; margin-bottom: 5px;}
+        .culto-titulo, .estudo-titulo {font-weight: bold; font-size: 1.05rem; margin-bottom: 8px; color: var(--accent);}
         .culto-meta {font-size: 0.9rem; color: #666; margin-bottom: 10px;}
-        .culto-texto {font-size: 0.95rem; line-height: 1.6; white-space: pre-line;}
-        .culto-acoes {margin-top: 12px; display: flex; gap: 8px;}
+        .culto-texto, .estudo-texto {font-size: 0.95rem; line-height: 1.8; white-space: pre-line;}
+        .culto-acoes, .estudo-acoes {margin-top: 12px; display: flex; gap: 8px;}
         .empty {text-align: center; padding: 40px 20px; color: #888;}
+        
+        .estudo-box {
+            background: #f0f7ff; border: 1px solid #b3d8ff;
+            border-radius: 8px; padding: 20px; margin: 20px 0;
+        }
+        .estudo-box h3 {color: #2c3e50; margin-bottom: 15px; font-size: 1rem;}
+        .estudo-parte {margin-bottom: 15px;}
+        .estudo-parte strong {color: var(--accent);}
     </style>
 </head>
 <body>
 
 <header>
     <h1>📖 Caderno de Cultos</h1>
-    <p>Grave sua voz → vira texto → salve suas anotações</p>
+    <p>Grave sua voz → vira texto → estude e salve ✨</p>
 </header>
 
+<div class="abas">
+    <button class="aba ativa" data-aba="gravacao">🎙️ Gravação</button>
+    <button class="aba" data-aba="estudos">📝 Estudos</button>
+    <button class="aba" data-aba="lista">📚 Arquivo</button>
+</div>
+
 <main>
-    <div class="aviso">
-        ℹ️ <strong>Como usar:</strong> Clique em 🎙️ para começar. Fale naturalmente — ele continua ouvindo mesmo nas pausas. Clique em ⏹️ quando terminar.
-    </div>
-    <div class="aviso-importante">
-        ⚠️ <strong>Sobre a tela fechada:</strong> No celular, quando você bloqueia a tela, o navegador PODE parar a escuta (isso é uma proteção do sistema). Para melhores resultados, mantenha a página aberta e com a tela acesa durante a gravação. O texto NÃO se perde quando você pausa — tudo fica acumulado na tela!
-    </div>
-
-    <div class="record-section">
-        <h2>🎤 Transcrição da Mensagem</h2>
-        <button class="mic-btn" id="micBtn" title="Clique para começar/parar">🎙️</button>
-        <p class="status" id="status">Clique no botão acima para começar<br>Ele vai pedir permissão do microfone — clique em Permitir</p>
-        <div class="transcricao-box" id="transcricaoBox">
-            <em>O que você fala vai aparecer aqui...<br><br>✅ Enquanto você fala, as palavras aparecem abaixo em cinza<br>✅ Quando você faz uma pausa, o texto é salvo e fica em preto<br>✅ Nada é perdido, tudo vai ficando acumulado aqui</em>
+    <!-- 🎙️ ABA 1: GRAVAÇÃO E TRANSCRIÇÃO -->
+    <div class="conteudo-aba ativa" id="aba-gravacao">
+        <div class="aviso">
+            ℹ️ <strong>Como usar:</strong> Clique em 🎙️ para começar. Fale naturalmente — ele NÃO repete mais! Clique em ⏹️ quando terminar.
         </div>
-        <div style="margin-top: 10px;">
-            <button id="limparTranscricaoBtn" class="btn-secondary">🗑️ Limpar Transcrição</button>
-            <button id="usarTextoBtn" class="hidden">✍️ Usar este texto na anotação</button>
+        <div class="aviso-importante">
+            ⚠️ <strong>Sobre a tela fechada:</strong> No celular, quando você bloqueia a tela, o navegador pode parar a escuta. Para melhores resultados, mantenha a página aberta e com a tela acesa durante a gravação.
+        </div>
+
+        <div class="record-section">
+            <h2>🎤 Transcrição da Mensagem</h2>
+            <button class="mic-btn" id="micBtn" title="Clique para começar/parar">🎙️</button>
+            <p class="status" id="status">Clique no botão acima para começar<br>Ele vai pedir permissão do microfone — clique em Permitir</p>
+            <div class="transcricao-box" id="transcricaoBox">
+                <em>O que você fala vai aparecer aqui...<br><br>✅ Fale naturalmente<br>✅ Sem repetição/eco<br>✅ Tudo acumulado sem perder</em>
+            </div>
+            <div style="margin-top: 10px;">
+                <button id="limparTranscricaoBtn" class="btn-secondary">🗑️ Limpar</button>
+                <button id="criarEstudoBtn" class="hidden">📝 Criar Estudo</button>
+                <button id="usarTextoBtn" class="hidden">✍️ Usar na Anotação</button>
+            </div>
+        </div>
+
+        <form id="cultoForm">
+            <h2>📝 Registrar Culto</h2>
+            
+            <label>Data:</label>
+            <input type="date" id="dataCulto">
+            
+            <label>Tipo de Culto:</label>
+            <select id="tipoCulto">
+                <option value="Culto Dominical">Culto Dominical</option>
+                <option value="Culto de Oração">Culto de Oração</option>
+                <option value="Culto de Jovens">Culto de Jovens</option>
+                <option value="Culto de Doutrina">Culto de Doutrina</option>
+                <option value="Reunião de Obreiros">Reunião de Obreiros</option>
+                <option value="Outro">Outro</option>
+            </select>
+            
+            <label>Pregador / Responsável:</label>
+            <input type="text" id="pregador" placeholder="Ex.: Pr. João">
+            
+            <label>Tema / Título da Mensagem:</label>
+            <input type="text" id="tema" placeholder="Ex.: A Fé que Move Montanhas">
+            
+            <label>Anotações / Mensagem:</label>
+            <textarea id="anotacoes" placeholder="Digite ou use o microfone acima..."></textarea>
+            
+            <button type="submit">💾 Salvar Culto</button>
+            <button type="button" class="btn-secondary" id="limparBtn">🗑️ Limpar Tudo</button>
+        </form>
+    </div>
+
+    <!-- 📝 ABA 2: ESTUDOS -->
+    <div class="conteudo-aba" id="aba-estudos">
+        <h2>📝 Estudos e Reflexões</h2>
+        <p style="margin-bottom: 20px; color: #666;">Transforme suas anotações em um estudo organizado: com introdução, pontos principais e aplicação.</p>
+        
+        <div id="estudoEntrada" style="margin-bottom: 25px;">
+            <label>📌 Título do Estudo:</label>
+            <input type="text" id="estudoTitulo" placeholder="Ex.: A Importância da Oração">
+            
+            <label>📖 Texto Base / Versículos:</label>
+            <textarea id="estudoVersiculos" placeholder="Ex.: Mateus 6:5-13 — E quando orares..."></textarea>
+            
+            <label>📝 Conteúdo / Mensagem:</label>
+            <textarea id="estudoConteudo" placeholder="Cole sua transcrição ou escreva aqui..."></textarea>
+            
+            <button id="gerarEstudoBtn">✨ Organizar em Estudo</button>
+        </div>
+        
+        <div id="estudoResultado" class="hidden estudo-box">
+            <h3 id="estudoResultadoTitulo">📖 Estudo</h3>
+            <div id="estudoConteudoCompleto"></div>
+            <div style="margin-top: 15px;">
+                <button id="salvarEstudoBtn">💾 Salvar Estudo</button>
+                <button id="novoEstudoBtn" class="btn-secondary">📄 Novo Estudo</button>
+            </div>
+        </div>
+        
+        <div id="listaEstudos" style="margin-top: 40px;">
+            <h3>📚 Meus Estudos Salvos</h3>
+            <div id="estudosSalvos"></div>
         </div>
     </div>
 
-    <form id="cultoForm">
-        <h2>📝 Dados do Culto</h2>
-        
-        <label>Data:</label>
-        <input type="date" id="dataCulto">
-        
-        <label>Tipo de Culto:</label>
-        <select id="tipoCulto">
-            <option value="Culto Dominical">Culto Dominical</option>
-            <option value="Culto de Oração">Culto de Oração</option>
-            <option value="Culto de Jovens">Culto de Jovens</option>
-            <option value="Culto de Doutrina">Culto de Doutrina</option>
-            <option value="Reunião de Obreiros">Reunião de Obreiros</option>
-            <option value="Outro">Outro</option>
-        </select>
-        
-        <label>Pregador / Responsável:</label>
-        <input type="text" id="pregador" placeholder="Ex.: Pr. João">
-        
-        <label>Tema / Título da Mensagem:</label>
-        <input type="text" id="tema" placeholder="Ex.: A Fé que Move Montanhas">
-        
-        <label>Anotações / Mensagem:</label>
-        <textarea id="anotacoes" placeholder="Digite ou use o microfone acima..."></textarea>
-        
-        <button type="submit">💾 Salvar Anotação</button>
-        <button type="button" class="btn-secondary" id="limparBtn">🗑️ Limpar Tudo</button>
-    </form>
-
-    <div class="lista-section">
-        <h2>📚 Minhas Anotações</h2>
+    <!-- 📚 ABA 3: ARQUIVO DE ANOTAÇÕES -->
+    <div class="conteudo-aba" id="aba-lista">
+        <h2>📚 Arquivo de Cultos</h2>
         <div id="listaCultos"></div>
     </div>
 </main>
 
 <script>
+// =====================================================
+// 🎙️ RECONHECIMENTO DE VOZ — SEM ECO!
+// =====================================================
 let reconhecimento = null;
 let estaGravando = false;
 let textoAcumulado = '';
-let textoParcial = '';
+let ultimoTextoRecebido = ''; // Para evitar repetição/eco
 
 const micBtn = document.getElementById('micBtn');
 const status = document.getElementById('status');
 const transcricaoBox = document.getElementById('transcricaoBox');
 const usarTextoBtn = document.getElementById('usarTextoBtn');
+const criarEstudoBtn = document.getElementById('criarEstudoBtn');
 const limparTranscricaoBtn = document.getElementById('limparTranscricaoBtn');
 
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -182,19 +241,27 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     reconhecimento.lang = 'pt-BR';
     reconhecimento.continuous = true;
     reconhecimento.interimResults = true;
+    reconhecimento.maxAlternatives = 1;
 
     reconhecimento.onresult = function(event) {
-        let novoTextoParcial = '';
+        let textoFinal = '';
+        let textoTemp = '';
+        
         for (let i = event.resultIndex; i < event.results.length; i++) {
+            const texto = event.results[i][0].transcript.trim();
+            
             if (event.results[i].isFinal) {
-                textoAcumulado += (textoAcumulado ? ' ' : '') + event.results[i][0].transcript;
-                textoParcial = '';
+                // ✅ Evita repetição: só adiciona se for diferente do último
+                if (texto !== ultimoTextoRecebido && !textoAcumulado.includes(texto)) {
+                    textoAcumulado += (textoAcumulado ? ' ' : '') + texto;
+                    ultimoTextoRecebido = texto;
+                }
             } else {
-                novoTextoParcial += event.results[i][0].transcript;
-                textoParcial = novoTextoParcial;
+                textoTemp = texto;
             }
         }
-        atualizarVisualizacao();
+        
+        atualizarVisualizacao(textoTemp);
     };
 
     reconhecimento.onerror = function(event) {
@@ -205,8 +272,6 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             status.textContent = '⏸️ Aguardando... pode continuar falando.';
         } else if (event.error === 'aborted' && estaGravando) {
             reiniciarReconhecimento();
-        } else {
-            status.textContent = '⚠️ ' + event.error;
         }
     };
 
@@ -216,7 +281,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         }
     };
 } else {
-    status.innerHTML = '❌ Seu navegador não suporta reconhecimento de voz.<br>Use o <strong>Google Chrome</strong> ou <strong>Microsoft Edge</strong>.';
+    status.innerHTML = '❌ Use o <strong>Chrome</strong> ou <strong>Edge</strong>.';
     micBtn.disabled = true;
     micBtn.style.opacity = '0.5';
 }
@@ -225,14 +290,13 @@ function reiniciarReconhecimento() {
     if (!estaGravando || !reconhecimento) return;
     try {
         reconhecimento.start();
-        status.textContent = '🔴 Ouvindo... continue falando!';
+        status.textContent = '🔴 Ouvindo... sem repetição! Continue falando.';
     } catch (e) {
-        console.log('Erro ao reiniciar:', e);
         setTimeout(reiniciarReconhecimento, 500);
     }
 }
 
-function atualizarVisualizacao() {
+function atualizarVisualizacao(textoParcial = '') {
     let html = '';
     if (textoAcumulado) {
         html += `<div class="texto-final">${textoAcumulado}</div>`;
@@ -245,24 +309,22 @@ function atualizarVisualizacao() {
     }
     transcricaoBox.innerHTML = html;
     transcricaoBox.scrollTop = transcricaoBox.scrollHeight;
-    if (textoAcumulado || textoParcial) {
+    
+    if (textoAcumulado) {
         usarTextoBtn.classList.remove('hidden');
+        criarEstudoBtn.classList.remove('hidden');
     }
 }
 
 function começarGravacao() {
     if (!reconhecimento) return;
     estaGravando = true;
-    textoParcial = '';
     micBtn.classList.add('gravando');
     micBtn.innerHTML = '⏹️';
-    status.textContent = '🔴 Ouvindo... fale livremente — continuo ouvindo nas pausas!';
+    status.textContent = '🔴 Ouvindo... sem repetição! Fale normalmente.';
     usarTextoBtn.classList.add('hidden');
-    try {
-        reconhecimento.start();
-    } catch (erro) {
-        console.log('Erro ao iniciar:', erro);
-    }
+    criarEstudoBtn.classList.add('hidden');
+    try { reconhecimento.start(); } catch (e) {}
 }
 
 function pararGravacao() {
@@ -270,81 +332,200 @@ function pararGravacao() {
     estaGravando = false;
     micBtn.classList.remove('gravando');
     micBtn.innerHTML = '🎙️';
-    if (textoParcial) {
-        textoAcumulado += (textoAcumulado ? ' ' : '') + textoParcial;
-        textoParcial = '';
-    }
-    if (textoAcumulado) {
-        status.textContent = '✅ Transcrição concluída! Clique em "Usar este texto" para colocar na anotação.';
-        usarTextoBtn.classList.remove('hidden');
-    } else {
-        status.textContent = '⏹️ Parado. Clique para começar.';
-    }
-    atualizarVisualizacao();
-    try { reconhecimento.stop(); } catch(e) {}
+    status.textContent = '✅ Pronto! Texto capturado sem repetição.';
+    atualizarVisualizacao('');
+    try { reconhecimento.stop(); } catch (e) {}
 }
 
 micBtn.addEventListener('click', function() {
-    if (estaGravando) {
-        pararGravacao();
-    } else {
-        começarGravacao();
-    }
+    estaGravando ? pararGravacao() : começarGravacao();
 });
 
 limparTranscricaoBtn.addEventListener('click', function() {
-    if (estaGravando) {
-        pararGravacao();
-    }
-    if (textoAcumulado && !confirm('Tem certeza que quer apagar o texto gravado?')) {
-        return;
-    }
+    if (estaGravando) pararGravacao();
+    if (textoAcumulado && !confirm('Apagar o texto gravado?')) return;
     textoAcumulado = '';
-    textoParcial = '';
+    ultimoTextoRecebido = '';
     atualizarVisualizacao();
     usarTextoBtn.classList.add('hidden');
-    status.textContent = 'Clique no botão acima para começar';
+    criarEstudoBtn.classList.add('hidden');
+    status.textContent = 'Clique para começar';
 });
 
 usarTextoBtn.addEventListener('click', function() {
     document.getElementById('anotacoes').value = textoAcumulado;
+    document.querySelector('[data-aba="gravacao"]').click();
     window.scrollTo({top: document.getElementById('anotacoes').offsetTop - 20, behavior: 'smooth'});
 });
 
+criarEstudoBtn.addEventListener('click', function() {
+    document.getElementById('estudoConteudo').value = textoAcumulado;
+    document.querySelector('[data-aba="estudos"]').click();
+});
+
+// =====================================================
+// 🔄 SISTEMA DE ABAS
+// =====================================================
+document.querySelectorAll('.aba').forEach(botao => {
+    botao.addEventListener('click', function() {
+        document.querySelectorAll('.aba').forEach(b => b.classList.remove('ativa'));
+        document.querySelectorAll('.conteudo-aba').forEach(c => c.classList.remove('ativa'));
+        this.classList.add('ativa');
+        document.getElementById('aba-' + this.dataset.aba).classList.add('ativa');
+    });
+});
+
+// =====================================================
+// 📝 SISTEMA DE ESTUDOS
+// =====================================================
+let estudosSalvos = [];
+
+function carregarEstudos() {
+    const salvos = localStorage.getItem('caderno-estudos');
+    if (salvos) estudosSalvos = JSON.parse(salvos);
+    renderizarEstudos();
+}
+
+function salvarEstudos() {
+    localStorage.setItem('caderno-estudos', JSON.stringify(estudosSalvos));
+    renderizarEstudos();
+}
+
+function gerarEstruturaEstudo(conteudo, titulo, versiculos) {
+    const frases = conteudo.split(/[.!?]/).filter(f => f.trim().length > 10);
+    const introducao = frases[0] || 'Reflexão sobre o tema apresentado.';
+    const meio = frases.slice(1, Math.max(3, frases.length - 1));
+    const conclusao = frases.length > 1 ? frases[frases.length - 1] : 'Que esta palavra permaneça em nossos corações.';
+    
+    return `
+        <div class="estudo-parte">
+            <strong>📌 Tema:</strong> ${titulo || 'Sem título'}
+        </div>
+        ${versiculos ? `<div class="estudo-parte"><strong>📖 Texto Base:</strong><br>${versiculos}</div>` : ''}
+        <div class="estudo-parte">
+            <strong>🌿 Introdução:</strong><br>${introducao}
+        </div>
+        <div class="estudo-parte">
+            <strong>💡 Desenvolvimento:</strong><br>${meio.join('. ')}
+        </div>
+        <div class="estudo-parte">
+            <strong>🙏 Conclusão e Aplicação:</strong><br>${conclusao}
+        </div>
+    `;
+}
+
+document.getElementById('gerarEstudoBtn').addEventListener('click', function() {
+    const titulo = document.getElementById('estudoTitulo').value.trim() || 'Estudo Bíblico';
+    const versiculos = document.getElementById('estudoVersiculos').value.trim();
+    const conteudo = document.getElementById('estudoConteudo').value.trim();
+    
+    if (!conteudo) {
+        alert('⚠️ Escreva ou cole o conteúdo da mensagem primeiro!');
+        return;
+    }
+    
+    document.getElementById('estudoResultadoTitulo').textContent = '📖 ' + titulo;
+    document.getElementById('estudoConteudoCompleto').innerHTML = gerarEstruturaEstudo(conteudo, titulo, versiculos);
+    document.getElementById('estudoResultado').classList.remove('hidden');
+    document.getElementById('estudoEntrada').style.opacity = '0.5';
+    document.getElementById('estudoEntrada').style.pointerEvents = 'none';
+});
+
+document.getElementById('novoEstudoBtn').addEventListener('click', function() {
+    document.getElementById('estudoTitulo').value = '';
+    document.getElementById('estudoVersiculos').value = '';
+    document.getElementById('estudoConteudo').value = '';
+    document.getElementById('estudoResultado').classList.add('hidden');
+    document.getElementById('estudoEntrada').style.opacity = '1';
+    document.getElementById('estudoEntrada').style.pointerEvents = 'auto';
+});
+
+document.getElementById('salvarEstudoBtn').addEventListener('click', function() {
+    const titulo = document.getElementById('estudoTitulo').value.trim() || 'Estudo Bíblico';
+    const versiculos = document.getElementById('estudoVersiculos').value.trim();
+    const conteudo = document.getElementById('estudoConteudo').value.trim();
+    
+    estudosSalvos.unshift({
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+        data: new Date().toISOString().split('T')[0],
+        titulo: titulo,
+        versiculos: versiculos,
+        conteudo: conteudo
+    });
+    
+    salvarEstudos();
+    alert('✅ Estudo salvo com sucesso!');
+    document.getElementById('novoEstudoBtn').click();
+});
+
+function renderizarEstudos() {
+    const container = document.getElementById('estudosSalvos');
+    if (estudosSalvos.length === 0) {
+        container.innerHTML = '<div class="empty">📭 Nenhum estudo salvo ainda.<br>Crie seu primeiro estudo acima!</div>';
+        return;
+    }
+    container.innerHTML = estudosSalvos.map(estudo => `
+        <div class="estudo-card">
+            <div class="estudo-data">📅 ${formatarData(estudo.data)}</div>
+            <div class="estudo-titulo">📖 ${estudo.titulo}</div>
+            ${estudo.versiculos ? `<div style="color: #2980b9; font-style: italic; margin-bottom: 8px;">📖 ${estudo.versiculos}</div>` : ''}
+            <div class="estudo-texto">${estudo.conteudo.substring(0, 150)}${estudo.conteudo.length > 150 ? '...' : ''}</div>
+            <div class="estudo-acoes">
+                <button class="btn-pequeno" onclick="verEstudo('${estudo.id}')">👁️ Ver Completo</button>
+                <button class="btn-pequeno btn-excluir" onclick="excluirEstudo('${estudo.id}')">🗑️ Excluir</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+window.verEstudo = function(id) {
+    const estudo = estudosSalvos.find(e => e.id === id);
+    if (!estudo) return;
+    document.getElementById('estudoTitulo').value = estudo.titulo;
+    document.getElementById('estudoVersiculos').value = estudo.versiculos || '';
+    document.getElementById('estudoConteudo').value = estudo.conteudo;
+    document.getElementById('gerarEstudoBtn').click();
+    document.querySelector('[data-aba="estudos"]').click();
+};
+
+window.excluirEstudo = function(id) {
+    if (confirm('Tem certeza que deseja excluir este estudo?')) {
+        estudosSalvos = estudosSalvos.filter(e => e.id !== id);
+        salvarEstudos();
+    }
+};
+
+// =====================================================
+// 📚 SALVAR CULTOS - ARQUIVO PRINCIPAL
+// =====================================================
 let cultos = [];
 let editandoId = null;
 
 function carregarDados() {
-    const salvos = localStorage.getItem('caderno_cultos');
-    if (salvos) {
-        cultos = JSON.parse(salvos);
-    }
-    renderizarLista();
+    const salvos = localStorage.getItem('caderno-cultos');
+    if (salvos) cultos = JSON.parse(salvos);
+    renderizarListaCultos();
 }
 
 function salvarDados() {
-    localStorage.setItem('caderno_cultos', JSON.stringify(cultos));
-    renderizarLista();
+    localStorage.setItem('caderno-cultos', JSON.stringify(cultos));
+    renderizarListaCultos();
 }
 
 function formatarData(dataStr) {
     if (!dataStr) return 'Sem data';
     const data = new Date(dataStr + 'T00:00:00');
-    return data.toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-    });
+    return data.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
 function gerarId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
-function renderizarLista() {
+function renderizarListaCultos() {
     const container = document.getElementById('listaCultos');
     if (cultos.length === 0) {
-        container.innerHTML = '<div class="empty">📭 Nenhuma anotação salva ainda.<br>Comece registrando seu primeiro culto acima!</div>';
+        container.innerHTML = '<div class="empty">📭 Nenhuma anotação salva ainda.<br>Comece registrando seu primeiro culto!</div>';
         return;
     }
     cultos.sort((a, b) => new Date(b.data) - new Date(a.data));
@@ -352,10 +533,8 @@ function renderizarLista() {
         <div class="culto-card">
             <div class="culto-data">📅 ${formatarData(culto.data)}</div>
             <div class="culto-titulo">${culto.tema || 'Sem título'}</div>
-            <div class="culto-meta">
-                ${culto.tipoCulto} — ${culto.pregador || 'Pregador não informado'}
-            </div>
-            <div class="culto-texto">${culto.anotacoes || '<em>Sem anotações</em>'}</div>
+            <div class="culto-meta">${culto.tipo} — ${culto.pregador || 'Pregador não informado'}</div>
+            <div class="culto-texto">${culto.anotacoes.substring(0, 150)}${culto.anotacoes.length > 150 ? '...' : ''}</div>
             <div class="culto-acoes">
                 <button class="btn-pequeno" onclick="editarCulto('${culto.id}')">✏️ Editar</button>
                 <button class="btn-pequeno btn-excluir" onclick="excluirCulto('${culto.id}')">🗑️ Excluir</button>
@@ -368,11 +547,12 @@ window.editarCulto = function(id) {
     const culto = cultos.find(c => c.id === id);
     if (!culto) return;
     editandoId = id;
-    document.getElementById('dataCulto').value = culto.data || '';
-    document.getElementById('tipoCulto').value = culto.tipoCulto || 'Culto Dominical';
-    document.getElementById('pregador').value = culto.pregador || '';
-    document.getElementById('tema').value = culto.tema || '';
-    document.getElementById('anotacoes').value = culto.anotacoes || '';
+    document.getElementById('dataCulto').value = culto.data;
+    document.getElementById('tipoCulto').value = culto.tipo;
+    document.getElementById('pregador').value = culto.pregador;
+    document.getElementById('tema').value = culto.tema;
+    document.getElementById('anotacoes').value = culto.anotacoes;
+    document.querySelector('[data-aba="gravacao"]').click();
     window.scrollTo({top: 0, behavior: 'smooth'});
     document.querySelector('button[type="submit"]').textContent = '🔄 Atualizar';
 };
@@ -391,28 +571,25 @@ function limparFormulario() {
     document.getElementById('pregador').value = '';
     document.getElementById('tema').value = '';
     document.getElementById('anotacoes').value = '';
-    document.querySelector('button[type="submit"]').textContent = '💾 Salvar Anotação';
+    document.querySelector('button[type="submit"]').textContent = '💾 Salvar Culto';
 }
 
 document.getElementById('cultoForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
-    const dadosCulto = {
+    const dados = {
         id: editandoId || gerarId(),
         data: document.getElementById('dataCulto').value,
-        tipoCulto: document.getElementById('tipoCulto').value,
+        tipo: document.getElementById('tipoCulto').value,
         pregador: document.getElementById('pregador').value.trim(),
         tema: document.getElementById('tema').value.trim(),
         anotacoes: document.getElementById('anotacoes').value.trim()
     };
     
     if (editandoId) {
-        const indice = cultos.findIndex(c => c.id === editandoId);
-        if (indice !== -1) {
-            cultos[indice] = dadosCulto;
-        }
+        const idx = cultos.findIndex(c => c.id === editandoId);
+        if (idx !== -1) cultos[idx] = dados;
     } else {
-        cultos.unshift(dadosCulto);
+        cultos.unshift(dados);
     }
     
     salvarDados();
@@ -424,6 +601,7 @@ document.getElementById('limparBtn').addEventListener('click', limparFormulario)
 
 document.addEventListener('DOMContentLoaded', function() {
     carregarDados();
+    carregarEstudos();
     document.getElementById('dataCulto').value = new Date().toISOString().split('T')[0];
 });
 </script>
